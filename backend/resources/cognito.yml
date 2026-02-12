@@ -1,0 +1,172 @@
+Resources:
+  # =============================================================================
+  # COGNITO USER POOL
+  # =============================================================================
+  CognitoUserPool:
+    Type: AWS::Cognito::UserPool
+    DeletionPolicy: ${self:custom.deletionPolicy.${self:provider.stage}, 'Delete'}
+    UpdateReplacePolicy: Retain
+    Properties:
+      UserPoolName: ${self:service}-${self:provider.stage}-user-pool
+      
+      # Use email as the username
+      UsernameAttributes:
+        - email
+      
+      # Auto-verify email
+      AutoVerifiedAttributes:
+        - email
+      
+      # Username configuration
+      UsernameConfiguration:
+        CaseSensitive: false
+      
+      # Password policy
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 8
+          RequireLowercase: true
+          RequireUppercase: true
+          RequireNumbers: true
+          RequireSymbols: false
+          TemporaryPasswordValidityDays: 7
+      
+      # Account recovery
+      AccountRecoverySetting:
+        RecoveryMechanisms:
+          - Name: verified_email
+            Priority: 1
+      
+      # Email configuration (using Cognito default)
+      EmailConfiguration:
+        EmailSendingAccount: COGNITO_DEFAULT
+      
+      # Email verification message
+      EmailVerificationMessage: |
+        Welcome to Inventory Management System!
+        
+        Your verification code is: {####}
+        
+        This code expires in 24 hours.
+      
+      EmailVerificationSubject: 'Verify your email - Inventory Management'
+      
+      # Schema attributes
+      Schema:
+        - Name: email
+          AttributeDataType: String
+          Mutable: true
+          Required: true
+        - Name: name
+          AttributeDataType: String
+          Mutable: true
+          Required: false
+      
+      # MFA Configuration
+      MfaConfiguration: 'OFF'
+      
+      # Admin create user config
+      AdminCreateUserConfig:
+        AllowAdminCreateUserOnly: false
+        InviteMessageTemplate:
+          EmailMessage: |
+            You have been invited to Inventory Management System.
+
+            Username: {username}
+            Temporary password: {####}
+
+            Please sign in and change your password.
+          EmailSubject: You are invited to Inventory Management
+
+      
+      # Tags
+      UserPoolTags:
+        Environment: ${self:provider.stage}
+        Service: ${self:service}
+
+  # =============================================================================
+  # COGNITO USER POOL CLIENT
+  # =============================================================================
+  CognitoUserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      ClientName: ${self:service}-${self:provider.stage}-client
+      UserPoolId: !Ref CognitoUserPool
+      
+      # No client secret (required for SPA/browser apps)
+      GenerateSecret: false
+      
+      # Explicit auth flows
+      ExplicitAuthFlows:
+        - ALLOW_USER_SRP_AUTH
+        - ALLOW_REFRESH_TOKEN_AUTH
+        - ALLOW_USER_PASSWORD_AUTH
+      
+      # Token validity
+      AccessTokenValidity: 1
+      IdTokenValidity: 1
+      RefreshTokenValidity: 30
+      
+      TokenValidityUnits:
+        AccessToken: hours
+        IdToken: hours
+        RefreshToken: days
+      
+      # Prevent user existence errors (security best practice)
+      PreventUserExistenceErrors: ENABLED
+      
+      # Supported identity providers
+      SupportedIdentityProviders:
+        - COGNITO
+      
+      # Read/write attributes
+      ReadAttributes:
+        - email
+        - name
+        - email_verified
+      
+      WriteAttributes:
+        - email
+        - name
+
+  # =============================================================================
+  # API GATEWAY AUTHORIZER
+  # =============================================================================
+  ApiGatewayAuthorizer:
+    Type: AWS::ApiGateway::Authorizer
+    Properties:
+      Name: ${self:service}-${self:provider.stage}-cognito-authorizer
+      Type: COGNITO_USER_POOLS
+      RestApiId: !Ref ApiGatewayRestApi
+      IdentitySource: method.request.header.Authorization
+      ProviderARNs:
+        - !GetAtt CognitoUserPool.Arn
+      AuthorizerResultTtlInSeconds: 300
+
+# =============================================================================
+# OUTPUTS
+# =============================================================================
+Outputs:
+  CognitoUserPoolId:
+    Description: Cognito User Pool ID
+    Value: !Ref CognitoUserPool
+    Export:
+      Name: ${self:service}-${self:provider.stage}-UserPoolId
+
+  CognitoUserPoolArn:
+    Description: Cognito User Pool ARN
+    Value: !GetAtt CognitoUserPool.Arn
+    Export:
+      Name: ${self:service}-${self:provider.stage}-UserPoolArn
+
+  CognitoUserPoolClientId:
+    Description: Cognito User Pool Client ID
+    Value: !Ref CognitoUserPoolClient
+    Export:
+      Name: ${self:service}-${self:provider.stage}-UserPoolClientId
+
+  ApiGatewayAuthorizerId:
+    Description: API Gateway Authorizer ID
+    Value: !Ref ApiGatewayAuthorizer
+    Export:
+      Name: ${self:service}-${self:provider.stage}-AuthorizerId

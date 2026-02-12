@@ -1,0 +1,76 @@
+Resources:
+
+  InventoryTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: ${self:custom.deletionPolicy.${self:provider.stage}, 'Delete'}
+    UpdateReplacePolicy: Retain
+    Properties:
+      TableName: ${self:custom.tableName}
+      BillingMode: PAY_PER_REQUEST
+      
+      # Primary Key Definition
+      AttributeDefinitions:
+        - AttributeName: PK
+          AttributeType: S
+        - AttributeName: SK
+          AttributeType: S
+        - AttributeName: GSI1PK
+          AttributeType: S
+        - AttributeName: GSI1SK
+          AttributeType: S
+      
+      KeySchema:
+        - AttributeName: PK
+          KeyType: HASH
+        - AttributeName: SK
+          KeyType: RANGE
+      
+      # Global Secondary Index for queries
+      GlobalSecondaryIndexes:
+        - IndexName: GSI1
+          KeySchema:
+            - AttributeName: GSI1PK
+              KeyType: HASH
+            - AttributeName: GSI1SK
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+      
+      # Enable Point-in-Time Recovery
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: ${self:custom.pitrEnabled.${self:provider.stage}, false}
+      
+      # Server-side encryption
+      SSESpecification:
+        SSEEnabled: true
+      
+      # Tags for resource identification
+      Tags:
+        - Key: Environment
+          Value: ${self:provider.stage}
+        - Key: Service
+          Value: ${self:service}
+        - Key: ManagedBy
+          Value: serverless-framework
+
+# =============================================================================
+# OUTPUTS
+# =============================================================================
+Outputs:
+  InventoryTableName:
+    Description: DynamoDB Table Name
+    Value: !Ref InventoryTable
+    Export:
+      Name: ${self:service}-${self:provider.stage}-TableName
+
+  InventoryTableArn:
+    Description: DynamoDB Table ARN
+    Value: !GetAtt InventoryTable.Arn
+    Export:
+      Name: ${self:service}-${self:provider.stage}-TableArn
+
+  InventoryTableGSI1Arn:
+    Description: DynamoDB Table GSI1 ARN
+    Value: !Sub '${InventoryTable.Arn}/index/GSI1'
+    Export:
+      Name: ${self:service}-${self:provider.stage}-TableGSI1Arn

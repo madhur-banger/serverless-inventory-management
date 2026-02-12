@@ -1,0 +1,114 @@
+# resources/sqs.yml
+# SQS Queues for Order Processing
+
+Resources:
+  # =============================================================================
+  # DEAD LETTER QUEUE (DLQ)
+  # =============================================================================
+  OrderDLQ:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: ${self:service}-${self:provider.stage}-order-dlq
+      
+      # Keep failed messages for 14 days for debugging
+      MessageRetentionPeriod: 1209600
+      
+      # Visibility timeout (should be >= Lambda timeout)
+      VisibilityTimeout: 60
+      
+      # Tags
+      Tags:
+        - Key: Environment
+          Value: ${self:provider.stage}
+        - Key: Service
+          Value: ${self:service}
+        - Key: Purpose
+          Value: Dead Letter Queue
+
+  # =============================================================================
+  # ORDER PROCESSING QUEUE
+  # =============================================================================
+  OrderQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: ${self:service}-${self:provider.stage}-order-queue
+      
+      # Message retention (4 days default)
+      MessageRetentionPeriod: 345600
+      
+      # Visibility timeout (should be 6x Lambda timeout for retries)
+      # Lambda timeout is 30s, so 180s = 3 minutes
+      VisibilityTimeout: 180
+      
+      # Delay before message becomes visible (0 = immediate)
+      DelaySeconds: 0
+      
+      # Max message size (256 KB)
+      MaximumMessageSize: 262144
+      
+      # Long polling (reduces costs, improves efficiency)
+      ReceiveMessageWaitTimeSeconds: 20
+      
+      # Dead Letter Queue configuration
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt OrderDLQ.Arn
+        maxReceiveCount: 3
+      
+      # Tags
+      Tags:
+        - Key: Environment
+          Value: ${self:provider.stage}
+        - Key: Service
+          Value: ${self:service}
+        - Key: Purpose
+          Value: Order Processing
+
+  # =============================================================================
+  # QUEUE POLICY (Allow Lambda to send messages)
+  # =============================================================================
+  OrderQueuePolicy:
+    Type: AWS::SQS::QueuePolicy
+    Properties:
+      Queues:
+        - !Ref OrderQueue
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: AllowLambdaSendMessage
+            Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action:
+              - sqs:SendMessage
+            Resource: !GetAtt OrderQueue.Arn
+            Condition:
+              ArnLike:
+                aws:SourceArn: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${self:service}-${self:provider.stage}-*'
+
+# =============================================================================
+# OUTPUTS
+# =============================================================================
+Outputs:
+  OrderQueueUrl:
+    Description: SQS Order Queue URL
+    Value: !Ref OrderQueue
+    Export:
+      Name: ${self:service}-${self:provider.stage}-OrderQueueUrl
+
+  OrderQueueArn:
+    Description: SQS Order Queue ARN
+    Value: !GetAtt OrderQueue.Arn
+    Export:
+      Name: ${self:service}-${self:provider.stage}-OrderQueueArn
+
+  OrderDLQUrl:
+    Description: SQS Order DLQ URL
+    Value: !Ref OrderDLQ
+    Export:
+      Name: ${self:service}-${self:provider.stage}-OrderDLQUrl
+
+  OrderDLQArn:
+    Description: SQS Order DLQ ARN
+    Value: !GetAtt OrderDLQ.Arn
+    Export:
+      Name: ${self:service}-${self:provider.stage}-OrderDLQArn

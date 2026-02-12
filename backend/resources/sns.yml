@@ -1,0 +1,83 @@
+# resources/sns.yml
+# SNS Topic for Order Notifications
+
+Resources:
+  # =============================================================================
+  # ORDER NOTIFICATION TOPIC
+  # =============================================================================
+  OrderNotificationTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: ${self:service}-${self:provider.stage}-order-notifications
+      DisplayName: Order Notifications
+      
+      # Tags
+      Tags:
+        - Key: Environment
+          Value: ${self:provider.stage}
+        - Key: Service
+          Value: ${self:service}
+        - Key: Purpose
+          Value: Order Notifications
+
+  # =============================================================================
+  # TOPIC POLICY
+  # =============================================================================
+  OrderNotificationTopicPolicy:
+    Type: AWS::SNS::TopicPolicy
+    Properties:
+      Topics:
+        - !Ref OrderNotificationTopic
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: AllowLambdaPublish
+            Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action:
+              - sns:Publish
+            Resource: !Ref OrderNotificationTopic
+            Condition:
+              ArnLike:
+                aws:SourceArn: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${self:service}-${self:provider.stage}-*'
+
+  # =============================================================================
+  # EMAIL SUBSCRIPTION (Admin notification - update email in production)
+  # =============================================================================
+  # NOTE: You need to confirm the subscription via email after deployment
+  # For production, you might want to create subscriptions dynamically
+  # or use SES for sending emails directly to users
+  
+  AdminEmailSubscription:
+    Type: AWS::SNS::Subscription
+    Condition: IsProduction
+    Properties:
+      TopicArn: !Ref OrderNotificationTopic
+      Protocol: email
+      Endpoint: ${self:custom.adminEmail.${self:provider.stage}, 'admin@example.com'}
+
+# =============================================================================
+# CONDITIONS
+# =============================================================================
+Conditions:
+  IsProduction: !Equals
+  - ${self:provider.stage}
+  - prod
+
+
+# =============================================================================
+# OUTPUTS
+# =============================================================================
+Outputs:
+  OrderNotificationTopicArn:
+    Description: SNS Order Notification Topic ARN
+    Value: !Ref OrderNotificationTopic
+    Export:
+      Name: ${self:service}-${self:provider.stage}-OrderTopicArn
+
+  OrderNotificationTopicName:
+    Description: SNS Order Notification Topic Name
+    Value: !GetAtt OrderNotificationTopic.TopicName
+    Export:
+      Name: ${self:service}-${self:provider.stage}-OrderTopicName
