@@ -18,7 +18,7 @@ import {
   PaginatedProducts,
   buildProductKeys,
 } from '../models/product';
-import { NotFoundError, ConflictError } from '../utils/errors';
+import { NotFoundError } from '../utils/errors';
 import { logger } from '../utils/logger';
 
 
