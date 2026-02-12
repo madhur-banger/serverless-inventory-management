@@ -3,8 +3,7 @@ name: Deploy
 on:
   push:
     branches:
-      - main
-      - develop
+      - master
     paths:
       - 'backend/**'
       - '.github/workflows/deploy.yml'
@@ -37,7 +36,7 @@ jobs:
       - name: Determine deployment stage
         id: set-stage
         run: |
-          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+          if [[ "${{ github.ref }}" == "refs/heads/master" ]]; then
             echo "stage=prod" >> $GITHUB_OUTPUT
             echo "environment=production" >> $GITHUB_OUTPUT
           else
