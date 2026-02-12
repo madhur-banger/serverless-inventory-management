@@ -1,6 +1,7 @@
 import { ZodError } from 'zod';
 import { ValidationError } from '../utils/errors';
 
+// Formatting ZOD
 export const formatZodErrors = (
   error: ZodError
 ): Array<{ field: string; message: string }> => {

@@ -1,0 +1,106 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'backend/**'
+      - '.github/workflows/deploy.yml'
+
+defaults:
+  run:
+    working-directory: backend
+
+# Prevent concurrent deployments to the same environment
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+
+  ci:
+    name: CI Checks
+    uses: ./.github/workflows/ci.yml
+
+
+  setup:
+    name: Setup Deployment
+    runs-on: ubuntu-latest
+    needs: ci
+    outputs:
+      stage: ${{ steps.set-stage.outputs.stage }}
+      environment: ${{ steps.set-stage.outputs.environment }}
+    
+    steps:
+      - name: Determine deployment stage
+        id: set-stage
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/master" ]]; then
+            echo "stage=prod" >> $GITHUB_OUTPUT
+            echo "environment=production" >> $GITHUB_OUTPUT
+          else
+            echo "stage=dev" >> $GITHUB_OUTPUT
+            echo "environment=development" >> $GITHUB_OUTPUT
+          fi
+
+
+  deploy:
+    name: Deploy to ${{ needs.setup.outputs.stage }}
+    runs-on: ubuntu-latest
+    needs: setup
+    environment: ${{ needs.setup.outputs.environment }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Deploy to AWS
+        run: |
+          npx serverless deploy \
+            --stage ${{ needs.setup.outputs.stage }} \
+            --verbose
+        env:
+          ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+          FRONTEND_URL: ${{ secrets.FRONTEND_URL }}
+
+      - name: Get deployment outputs
+        id: outputs
+        run: |
+          API_URL=$(npx serverless info --stage ${{ needs.setup.outputs.stage }} --verbose | grep -oP 'https://[a-z0-9]+\.execute-api\.[a-z0-9-]+\.amazonaws\.com/[a-z]+' | head -1)
+          echo "api_url=$API_URL" >> $GITHUB_OUTPUT
+
+      - name: Deployment Summary
+        run: |
+          echo "## Deployment Successful! 🚀" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Stage:** ${{ needs.setup.outputs.stage }}" >> $GITHUB_STEP_SUMMARY
+          echo "**API URL:** ${{ steps.outputs.outputs.api_url }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Endpoints:" >> $GITHUB_STEP_SUMMARY
+          echo "- GET /health" >> $GITHUB_STEP_SUMMARY
+          echo "- POST /products" >> $GITHUB_STEP_SUMMARY
+          echo "- GET /products" >> $GITHUB_STEP_SUMMARY
+          echo "- GET /products/{id}" >> $GITHUB_STEP_SUMMARY
+          echo "- PUT /products/{id}" >> $GITHUB_STEP_SUMMARY
+          echo "- DELETE /products/{id}" >> $GITHUB_STEP_SUMMARY
+          echo "- POST /orders" >> $GITHUB_STEP_SUMMARY
+          echo "- GET /orders" >> $GITHUB_STEP_SUMMARY
+          echo "- GET /orders/{id}" >> $GITHUB_STEP_SUMMARY
