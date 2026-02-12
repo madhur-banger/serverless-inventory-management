@@ -34,9 +34,14 @@ const DEFAULT_PAGE_SIZE = 20;
 
 
 const toProduct = (item: ProductDynamoItem): Product => {
-  const { PK, SK, GSI1PK, GSI1SK, ...product } = item;
+  const product = { ...item };
+  delete (product as any).PK;
+  delete (product as any).SK;
+  delete (product as any).GSI1PK;
+  delete (product as any).GSI1SK;
   return product as Product;
 };
+
 
 
 export const createProduct = async (

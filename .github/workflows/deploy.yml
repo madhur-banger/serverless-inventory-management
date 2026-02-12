@@ -19,10 +19,6 @@ concurrency:
 
 jobs:
 
-  ci:
-    name: CI Checks
-    uses: ./.github/workflows/ci.yml
-
 
   setup:
     name: Setup Deployment

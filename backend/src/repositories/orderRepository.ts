@@ -30,9 +30,14 @@ const DEFAULT_PAGE_SIZE = 20;
 
 
 const toOrder = (item: OrderDynamoItem): Order => {
-  const { PK, SK, GSI1PK, GSI1SK, ...order } = item;
+  const order = { ...item };
+  delete (order as any).PK;
+  delete (order as any).SK;
+  delete (order as any).GSI1PK;
+  delete (order as any).GSI1SK;
   return order as Order;
 };
+
 
 
 export const createOrder = async (
