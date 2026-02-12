@@ -8,10 +8,6 @@ on:
       - 'backend/**'
       - '.github/workflows/deploy.yml'
 
-defaults:
-  run:
-    working-directory: backend
-
 concurrency:
   group: deploy-${{ github.ref }}
   cancel-in-progress: false
@@ -21,6 +17,7 @@ jobs:
   ci:
     name: CI Checks
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
 
@@ -30,9 +27,17 @@ jobs:
           cache: 'npm'
           cache-dependency-path: backend/package-lock.json
 
-      - run: npm ci
-      - run: npm run lint
-      - run: npm test
+      - name: Install dependencies
+        run: npm ci
+        working-directory: backend
+
+      - name: Run ESLint
+        run: npm run lint
+        working-directory: backend
+
+      - name: Run Tests
+        run: npm test
+        working-directory: backend
 
   setup:
     name: Setup Deployment
@@ -43,6 +48,8 @@ jobs:
       environment: ${{ steps.set-stage.outputs.environment }}
 
     steps:
+      - uses: actions/checkout@v4
+
       - name: Determine deployment stage
         id: set-stage
         run: |
@@ -69,7 +76,9 @@ jobs:
           cache: 'npm'
           cache-dependency-path: backend/package-lock.json
 
-      - run: npm ci
+      - name: Install dependencies
+        run: npm ci
+        working-directory: backend
 
       - uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -82,6 +91,7 @@ jobs:
           npx serverless deploy \
             --stage ${{ needs.setup.outputs.stage }} \
             --verbose
+        working-directory: backend
         env:
           ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
           FRONTEND_URL: ${{ secrets.FRONTEND_URL }}
@@ -91,10 +101,11 @@ jobs:
         run: |
           API_URL=$(npx serverless info --stage ${{ needs.setup.outputs.stage }} --verbose | grep -oP 'https://[a-z0-9]+\.execute-api\.[a-z0-9-]+\.amazonaws\.com/[a-z]+' | head -1)
           echo "api_url=$API_URL" >> $GITHUB_OUTPUT
+        working-directory: backend
 
       - name: Deployment Summary
         run: |
-          echo "## Deployment Successful! 🚀" >> $GITHUB_STEP_SUMMARY
+          echo "## Deployment Successful 🚀" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Stage:** ${{ needs.setup.outputs.stage }}" >> $GITHUB_STEP_SUMMARY
           echo "**API URL:** ${{ steps.outputs.api_url }}" >> $GITHUB_STEP_SUMMARY

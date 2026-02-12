@@ -95,7 +95,7 @@ export const getOrder = async (id: string): Promise<Order> => {
   return toOrder(result.Item as OrderDynamoItem);
 };
 
-
+// Update order
 export const updateOrderStatus = async (
   id: string,
   status: OrderStatus
