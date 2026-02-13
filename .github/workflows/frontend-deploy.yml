@@ -95,13 +95,21 @@ jobs:
       - name: Get CloudFront Outputs
         id: outputs
         run: |
-          INFO=$(npx serverless info --stage prod)
-
-          DIST_ID=$(echo "$INFO" | grep "CloudFrontDistributionId" | awk '{print $2}')
-          DOMAIN=$(echo "$INFO" | grep "CloudFrontDomainName" | awk '{print $2}')
-
+          STACK_NAME="inventory-frontend-prod"
+      
+          DIST_ID=$(aws cloudformation describe-stacks \
+            --stack-name $STACK_NAME \
+            --query "Stacks[0].Outputs[?OutputKey=='CloudFrontDistributionId'].OutputValue" \
+            --output text)
+      
+          DOMAIN=$(aws cloudformation describe-stacks \
+            --stack-name $STACK_NAME \
+            --query "Stacks[0].Outputs[?OutputKey=='CloudFrontDomainName'].OutputValue" \
+            --output text)
+      
           echo "distribution_id=$DIST_ID" >> $GITHUB_OUTPUT
           echo "website_url=https://$DOMAIN" >> $GITHUB_OUTPUT
+      
 
       # ---------------------------
       # Invalidate Cache
