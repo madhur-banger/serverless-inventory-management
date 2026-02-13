@@ -7,13 +7,21 @@ A production-grade, full-stack serverless inventory management system built on A
 ![AWS](https://img.shields.io/badge/AWS-Serverless-orange?logo=amazon-aws)
 ![CI/CD](https://img.shields.io/badge/CI%2FCD-GitHub%20Actions-black?logo=github-actions)
 
-## 🌐 Live Demo
+## 🌐 [Live Demo]((https://d3g8yrgnuos3zh.cloudfront.net))
 
 | Resource | URL |
 |----------|-----|
 | **Frontend** | [https://d3g8yrgnuos3zh.cloudfront.net](https://d3g8yrgnuos3zh.cloudfront.net) |
 | **API Base URL** | [https://s26yt7k27l.execute-api.us-east-1.amazonaws.com/prod](https://s26yt7k27l.execute-api.us-east-1.amazonaws.com/prod) |
 | **API Documentation** | [https://s26yt7k27l.execute-api.us-east-1.amazonaws.com/prod/docs](https://s26yt7k27l.execute-api.us-east-1.amazonaws.com/prod/docs) |
+
+![alt text](images/home.png)
+
+![alt text](images/architecture-aws.png)
+
+## [Video Walkthrough](https://www.loom.com/share/823b20b6ea7c4872b9091f554a6a34fe)
+
+##  [CI/CD Pipeline Image](#-cicd-pipeline)
 
 ## 📋 Requirements Checklist
 
@@ -28,7 +36,7 @@ A production-grade, full-stack serverless inventory management system built on A
 | 5 | **CI/CD Multi-Stage Deployment** |  Complete | GitHub Actions with stage logic (see [CI/CD Pipeline](#-cicd-pipeline)) |
 | 6 | **Fully Working & Documented** | Complete | This README + Technical Documentation + Swagger API Docs |
 | 7 | **Public GitHub Repository** |  Complete | [Repository Link](https://github.com/madhur-banger/serverless-inventory-management)  |
-| 8 | **Loom Video Walkthrough** | 📹 Pending | *[Add Loom link here]* |
+| 8 | **Loom Video Walkthrough** | 📹 Complete | *[ [Video Walkthrough](https://www.loom.com/share/823b20b6ea7c4872b9091f554a6a34fe)]* |
 
 ### ✅ Optional Enhancements (All Implemented!)
 
@@ -335,8 +343,8 @@ else
 fi
 ```
 
-![alt text](images/image-3.png)
-![alt text](images/image-4.png)
+![alt text](images/cicd-1.png)
+![alt text](images/cicd-2.png)
 ---
 
 ## 📱 Frontend Features
@@ -422,9 +430,9 @@ npm run test:integration
 
 ---
 
-## 📹 Video Walkthrough
+## 📹 [Video Walkthrough](https://www.loom.com/share/823b20b6ea7c4872b9091f554a6a34fe)
 
-*[Add Loom video link here]*
+[Video Link](https://www.loom.com/share/823b20b6ea7c4872b9091f554a6a34fe)
 
 **Video Contents:**
 1. Architecture overview
