@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useProducts } from '@/hooks/use-products';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -11,15 +12,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Search, Package, AlertCircle } from 'lucide-react';
+import { Search, Package, AlertCircle, Plus } from 'lucide-react';
 import { formatPrice } from '@/lib/utils';
 import { PRODUCT_CATEGORIES, type ProductCategory } from '@/types';
 import Layout from '@/components/layout/Layout';
+import ProductFormModal from '@/components/products/ProductFormModal';
 
 export default function Products() {
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState<ProductCategory | 'all'>('all');
   const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [isFormOpen, setIsFormOpen] = useState(false);
 
   // Debounce search
   useEffect(() => {
@@ -40,9 +43,15 @@ export default function Products() {
     <Layout>
       <div className="space-y-6">
         {/* Header */}
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Products</h1>
-          <p className="text-gray-600">Browse our product catalog</p>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Products</h1>
+            <p className="text-gray-600">Manage your product catalog</p>
+          </div>
+          <Button onClick={() => setIsFormOpen(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Add Product
+          </Button>
         </div>
 
         {/* Filters */}
@@ -96,16 +105,22 @@ export default function Products() {
 
         {/* Empty State */}
         {!isLoading && !error && products.length === 0 && (
-          <div className="text-center py-12">
+          <div className="text-center py-12 bg-white rounded-lg border">
             <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-1">
               No products found
             </h3>
-            <p className="text-gray-600">
+            <p className="text-gray-600 mb-4">
               {search || category !== 'all'
                 ? 'Try adjusting your search or filters'
-                : 'Check back later for new products'}
+                : 'Get started by adding your first product'}
             </p>
+            {!search && category === 'all' && (
+              <Button onClick={() => setIsFormOpen(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Add Product
+              </Button>
+            )}
           </div>
         )}
 
@@ -164,6 +179,13 @@ export default function Products() {
           </div>
         )}
       </div>
+
+      {/* Add Product Modal */}
+      <ProductFormModal
+        open={isFormOpen}
+        onOpenChange={setIsFormOpen}
+        product={null}
+      />
     </Layout>
   );
 }

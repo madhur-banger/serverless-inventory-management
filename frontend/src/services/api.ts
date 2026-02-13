@@ -60,6 +60,25 @@ export interface ListProductsParams {
   nextToken?: string;
 }
 
+export interface CreateProductData {
+  name: string;
+  description: string;
+  category: ProductCategory;
+  price: number;
+  quantity: number;
+  sku: string;
+  imageUrl?: string;
+}
+
+export interface UpdateProductData {
+  name?: string;
+  description?: string;
+  category?: ProductCategory;
+  price?: number;
+  quantity?: number;
+  imageUrl?: string;
+}
+
 export const productsApi = {
   list: async (
     params: ListProductsParams = {}
@@ -76,6 +95,26 @@ export const productsApi = {
 
   get: async (id: string): Promise<ApiResponse<Product>> => {
     return fetchWithAuth<ApiResponse<Product>>(API_ENDPOINTS.product(id));
+  },
+
+  create: async (data: CreateProductData): Promise<ApiResponse<Product>> => {
+    return fetchWithAuth<ApiResponse<Product>>(API_ENDPOINTS.products, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  update: async (id: string, data: UpdateProductData): Promise<ApiResponse<Product>> => {
+    return fetchWithAuth<ApiResponse<Product>>(API_ENDPOINTS.product(id), {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
+  delete: async (id: string): Promise<void> => {
+    await fetchWithAuth<void>(API_ENDPOINTS.product(id), {
+      method: 'DELETE',
+    });
   },
 };
 

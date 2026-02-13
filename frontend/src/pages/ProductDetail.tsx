@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useProduct } from '@/hooks/use-products';
 import { useCreateOrder } from '@/hooks/use-orders';
 import { Button } from '@/components/ui/button';
@@ -16,15 +16,21 @@ import {
   ShoppingCart,
   Loader2,
   CheckCircle,
+  Pencil,
+  Trash2,
 } from 'lucide-react';
 import { formatPrice } from '@/lib/utils';
 import Layout from '@/components/layout/Layout';
+import ProductFormModal from '@/components/products/ProductFormModal';
+import DeleteProductDialog from '@/components/products/DeleteProductDialog';
 
 export default function ProductDetail() {
   const { id } = useParams<{ id: string }>();
-//   const navigate = useNavigate();
+  const navigate = useNavigate();
   const [quantity, setQuantity] = useState(1);
   const [orderSuccess, setOrderSuccess] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
   const { data, isLoading, error } = useProduct(id || '');
   const createOrder = useCreateOrder();
@@ -51,6 +57,10 @@ export default function ProductDetail() {
     } catch {
       // Error is handled by the mutation
     }
+  };
+
+  const handleDeleteSuccess = () => {
+    navigate('/products');
   };
 
   if (isLoading) {
@@ -86,14 +96,35 @@ export default function ProductDetail() {
   return (
     <Layout>
       <div className="max-w-6xl mx-auto">
-        {/* Back Button */}
-        <Link
-          to="/products"
-          className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 mb-6"
-        >
-          <ArrowLeft className="h-4 w-4 mr-1" />
-          Back to Products
-        </Link>
+        {/* Back Button & Actions */}
+        <div className="flex items-center justify-between mb-6">
+          <Link
+            to="/products"
+            className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900"
+          >
+            <ArrowLeft className="h-4 w-4 mr-1" />
+            Back to Products
+          </Link>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsEditOpen(true)}
+            >
+              <Pencil className="h-4 w-4 mr-2" />
+              Edit
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsDeleteOpen(true)}
+              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Delete
+            </Button>
+          </div>
+        </div>
 
         {/* Order Success Banner */}
         {orderSuccess && (
@@ -234,6 +265,21 @@ export default function ProductDetail() {
           </div>
         </div>
       </div>
+
+      {/* Edit Modal */}
+      <ProductFormModal
+        open={isEditOpen}
+        onOpenChange={setIsEditOpen}
+        product={product}
+      />
+
+      {/* Delete Dialog */}
+      <DeleteProductDialog
+        open={isDeleteOpen}
+        onOpenChange={setIsDeleteOpen}
+        product={product}
+        onSuccess={handleDeleteSuccess}
+      />
     </Layout>
   );
 }
@@ -241,7 +287,13 @@ export default function ProductDetail() {
 function ProductDetailSkeleton() {
   return (
     <div className="max-w-6xl mx-auto">
-      <Skeleton className="h-5 w-32 mb-6" />
+      <div className="flex justify-between mb-6">
+        <Skeleton className="h-5 w-32" />
+        <div className="flex gap-2">
+          <Skeleton className="h-9 w-20" />
+          <Skeleton className="h-9 w-20" />
+        </div>
+      </div>
       <div className="grid md:grid-cols-2 gap-8 lg:gap-12">
         <Skeleton className="aspect-square rounded-lg" />
         <div className="space-y-6">

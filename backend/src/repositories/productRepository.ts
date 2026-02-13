@@ -243,8 +243,9 @@ export const listProducts = async (
     };
 
     // Filter by SK to only get product items
-    scanParams.FilterExpression = 'SK = :sk';
-    scanParams.ExpressionAttributeValues = { ':sk': 'METADATA' };
+    scanParams.FilterExpression = 'begins_with(PK, :pk)';
+    scanParams.ExpressionAttributeValues = { ':pk': 'PRODUCT#' };
+
 
     // Add search filter if provided
     if (params.search) {
