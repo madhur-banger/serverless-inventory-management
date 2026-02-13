@@ -89,7 +89,7 @@ export default function Login() {
             className="inline-flex items-center justify-center gap-2 mb-4"
           >
             <Package className="h-8 w-8" />
-            <span className="text-xl font-semibold">Inventory</span>
+            <span className="text-xl font-semibold">Serverless Inventory</span>
           </Link>
           <CardTitle>Welcome back</CardTitle>
           <CardDescription>Sign in to your account to continue</CardDescription>

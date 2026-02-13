@@ -189,7 +189,7 @@ export default function Signup() {
             className="inline-flex items-center justify-center gap-2 mb-4"
           >
             <Package className="h-8 w-8" />
-            <span className="text-xl font-semibold">Inventory</span>
+            <span className="text-xl font-semibold">Serverless Inventory</span>
           </Link>
           <CardTitle>Create an account</CardTitle>
           <CardDescription>Enter your details to get started</CardDescription>

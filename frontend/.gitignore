@@ -42,3 +42,9 @@ coverage
 # Misc
 *.local
 .cache
+
+# Environment (keep .env.example, ignore actual .env files with secrets)
+.env
+.env.*
+!.env.example
+!.env.*.example

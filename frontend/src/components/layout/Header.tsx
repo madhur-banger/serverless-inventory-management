@@ -30,7 +30,7 @@ export default function Header() {
           <Link to="/products" className="flex items-center gap-2">
             <Package className="h-7 w-7" />
             <span className="text-lg font-semibold hidden sm:block">
-              Inventory
+              Serverless Inventory
             </span>
           </Link>
 

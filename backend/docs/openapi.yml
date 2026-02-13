@@ -9,15 +9,15 @@ info:
     A full-stack serverless REST API for inventory management with product catalog and order processing.
     
     ## Features
-    - 🔐 **Authentication**: AWS Cognito JWT tokens
-    - 📦 **Products**: Full CRUD operations
-    - 🛒 **Orders**: Purchase products with stock management
-    - 📧 **Notifications**: Email notifications via SQS/SNS
+    -  **Authentication**: AWS Cognito JWT tokens
+    -  **Products**: Full CRUD operations
+    -  **Orders**: Purchase products with stock management
+    -  **Notifications**: Email notifications via SQS/SNS
     
     ## Authentication
     All endpoints except `/health` require a valid JWT token in the Authorization header:
 
-    Authorization: Bearer <your-jwt-token>
+    Authorization: `Bearer <your-jwt-token>`
 
     
     Get your token by signing in via AWS Cognito.
