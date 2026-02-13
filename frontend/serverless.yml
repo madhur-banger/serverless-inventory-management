@@ -1,0 +1,148 @@
+service: inventory-frontend
+
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  region: us-east-1
+  stage: ${opt:stage, 'prod'}
+
+plugins:
+  - serverless-s3-sync
+
+custom:
+  # S3 Bucket name
+  bucketName: inventory-frontend-${self:provider.stage}-${aws:accountId}
+  
+  # S3 Sync configuration
+  s3Sync:
+    - bucketName: ${self:custom.bucketName}
+      localDir: dist
+      deleteRemoved: true
+      params:
+        - index.html:
+            CacheControl: 'no-cache'
+        - "*.js":
+            CacheControl: 'public, max-age=31536000, immutable'
+        - "*.css":
+            CacheControl: 'public, max-age=31536000, immutable'
+        - "assets/*":
+            CacheControl: 'public, max-age=31536000, immutable'
+
+resources:
+  Resources:
+    # S3 Bucket for hosting
+    WebsiteBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:custom.bucketName}
+        PublicAccessBlockConfiguration:
+          BlockPublicAcls: true
+          BlockPublicPolicy: true
+          IgnorePublicAcls: true
+          RestrictPublicBuckets: true
+        WebsiteConfiguration:
+          IndexDocument: index.html
+          ErrorDocument: index.html
+        CorsConfiguration:
+          CorsRules:
+            - AllowedHeaders:
+                - '*'
+              AllowedMethods:
+                - GET
+                - HEAD
+              AllowedOrigins:
+                - '*'
+              MaxAge: 3600
+
+    # S3 Bucket Policy for CloudFront
+    WebsiteBucketPolicy:
+      Type: AWS::S3::BucketPolicy
+      Properties:
+        Bucket: !Ref WebsiteBucket
+        PolicyDocument:
+          Statement:
+            - Sid: AllowCloudFrontAccess
+              Effect: Allow
+              Principal:
+                Service: cloudfront.amazonaws.com
+              Action: s3:GetObject
+              Resource: !Sub '${WebsiteBucket.Arn}/*'
+              Condition:
+                StringEquals:
+                  AWS:SourceArn: !Sub 'arn:aws:cloudfront::${AWS::AccountId}:distribution/${CloudFrontDistribution}'
+
+    # CloudFront Origin Access Control
+    CloudFrontOAC:
+      Type: AWS::CloudFront::OriginAccessControl
+      Properties:
+        OriginAccessControlConfig:
+          Name: ${self:service}-${self:provider.stage}-oac
+          OriginAccessControlOriginType: s3
+          SigningBehavior: always
+          SigningProtocol: sigv4
+
+    # CloudFront Distribution
+    CloudFrontDistribution:
+      Type: AWS::CloudFront::Distribution
+      Properties:
+        DistributionConfig:
+          Enabled: true
+          Comment: ${self:service}-${self:provider.stage}
+          DefaultRootObject: index.html
+          HttpVersion: http2
+          PriceClass: PriceClass_100
+          
+          Origins:
+            - Id: S3Origin
+              DomainName: !GetAtt WebsiteBucket.RegionalDomainName
+              OriginAccessControlId: !Ref CloudFrontOAC
+              S3OriginConfig:
+                OriginAccessIdentity: ''
+
+          DefaultCacheBehavior:
+            TargetOriginId: S3Origin
+            ViewerProtocolPolicy: redirect-to-https
+            AllowedMethods:
+              - GET
+              - HEAD
+              - OPTIONS
+            CachedMethods:
+              - GET
+              - HEAD
+            Compress: true
+            CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6  # CachingOptimized
+            OriginRequestPolicyId: 88a5eaf4-2fd4-4709-b370-b4c650ea3fcf  # CORS-S3Origin
+
+          # Handle SPA routing - return index.html for 404s
+          CustomErrorResponses:
+            - ErrorCode: 403
+              ResponseCode: 200
+              ResponsePagePath: /index.html
+              ErrorCachingMinTTL: 0
+            - ErrorCode: 404
+              ResponseCode: 200
+              ResponsePagePath: /index.html
+              ErrorCachingMinTTL: 0
+
+          # Enable gzip/brotli compression
+          ViewerCertificate:
+            CloudFrontDefaultCertificate: true
+
+  Outputs:
+    WebsiteBucketName:
+      Description: S3 Bucket Name
+      Value: !Ref WebsiteBucket
+      
+    CloudFrontDistributionId:
+      Description: CloudFront Distribution ID
+      Value: !Ref CloudFrontDistribution
+      
+    CloudFrontDomainName:
+      Description: CloudFront Domain Name (Your Website URL)
+      Value: !GetAtt CloudFrontDistribution.DomainName
+      
+    WebsiteURL:
+      Description: Website URL
+      Value: !Sub 'https://${CloudFrontDistribution.DomainName}'
