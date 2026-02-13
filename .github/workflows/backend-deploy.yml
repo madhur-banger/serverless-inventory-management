@@ -106,7 +106,7 @@ jobs:
 
       - name: Deployment Summary
         run: |
-          echo "## 🚀 Backend Deployment Successful" >> $GITHUB_STEP_SUMMARY
+          echo "##  Backend Deployment Successful" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
           echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY

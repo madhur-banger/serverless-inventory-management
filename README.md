@@ -1,381 +1,410 @@
-# Serverless Inventory Management System Documentation
+# 🛒 Serverless Inventory Management System
 
-## 📋 Table of Contents
+A production-grade, full-stack serverless inventory management system built on AWS, demonstrating enterprise-level architecture, event-driven design, and modern DevOps practices for [sls.guru](https://www.sls.guru/)
 
-1. [Project Overview](#project-overview)
-2. [Architecture](#architecture)
-3. [Backend](#backend)
-4. [Frontend](#frontend)
-5. [Deployment](#deployment)
-6. [API Reference](#api-reference)
-7. [Testing](#testing)
-8. [Troubleshooting](#troubleshooting)
 
----
 
-## 🎯 Project Overview
+![AWS](https://img.shields.io/badge/AWS-Serverless-orange?logo=amazon-aws)
+![CI/CD](https://img.shields.io/badge/CI%2FCD-GitHub%20Actions-black?logo=github-actions)
 
-### Description
-A full-stack serverless inventory management system that allows users to:
-- Browse products with search and category filters
-- View detailed product information
-- Place orders with automatic stock management
-- Track order history and status
-- Receive email notifications for orders
+## 🌐 Live Demo
 
-### Tech Stack Summary
+| Resource | URL |
+|----------|-----|
+| **Frontend** | [https://d3g8yrgnuos3zh.cloudfront.net](https://d3g8yrgnuos3zh.cloudfront.net) |
+| **API Base URL** | [https://s26yt7k27l.execute-api.us-east-1.amazonaws.com/prod](https://s26yt7k27l.execute-api.us-east-1.amazonaws.com/prod) |
+| **API Documentation** | [https://s26yt7k27l.execute-api.us-east-1.amazonaws.com/prod/docs](https://s26yt7k27l.execute-api.us-east-1.amazonaws.com/prod/docs) |
 
-| Layer | Technology |
-|-------|------------|
-| Frontend | React 18, TypeScript, Vite, Tailwind CSS |
-| Backend | Node.js 18, Serverless Framework, TypeScript |
-| Database | DynamoDB (single-table design) |
-| Auth | AWS Cognito |
-| Queue | SQS + SNS |
-| Hosting | S3 + CloudFront (frontend), API Gateway + Lambda (backend) |
-| CI/CD | GitHub Actions |
+## 📋 Requirements Checklist
 
----
+###  Mandatory Requirements
 
-## 🏗️ Architecture
+| # | Requirement | Status | Evidence |
+|---|-------------|--------|----------|
+| 1 | **JavaScript/TypeScript** - Backend in Node.js, Frontend in React |  Complete | Backend: `backend/src/**/*.ts`, Frontend: `frontend/src/**/*.tsx` |
+| 2 | **Infrastructure as Code** - Serverless Framework |  Complete | `backend/serverless.yml` + `backend/resources/*.yml` |
+| 3 | **API Gateway + DynamoDB** |  Complete | REST API storing data in DynamoDB single-table design |
+| 4 | **Lambda CRUD Functions** |  Complete | 13 Lambda functions |
+| 5 | **CI/CD Multi-Stage Deployment** |  Complete | GitHub Actions with stage logic (see [CI/CD Pipeline](#-cicd-pipeline)) |
+| 6 | **Fully Working & Documented** | Complete | This README + Technical Documentation + Swagger API Docs |
+| 7 | **Public GitHub Repository** |  Complete | [Repository Link](https://github.com/madhur-banger/serverless-inventory-management)  |
+| 8 | **Loom Video Walkthrough** | 📹 Pending | *[Add Loom link here]* |
 
-### System Flow
-```
-User → CloudFront → S3 (React App)
-                ↓
-User → API Gateway → Cognito Auth → Lambda → DynamoDB
-                                      ↓
-                              SQS Queue → Lambda → SNS → Email
-```
+### ✅ Optional Enhancements (All Implemented!)
 
-### DynamoDB Single-Table Design
-
-| Entity | PK | SK | GSI1PK | GSI1SK |
-|--------|----|----|--------|--------|
-| Product | `PRODUCT#{id}` | `METADATA` | `CATEGORY#{category}` | `{createdAt}` |
-| Order | `ORDER#{id}` | `METADATA` | `USER#{userId}` | `{createdAt}` |
-
-### Order Processing Flow
-
-1. User places order via `POST /orders`
-2. Lambda validates input and checks stock
-3. Stock is atomically decreased in DynamoDB
-4. Order record created with status `PENDING`
-5. Message sent to SQS queue
-6. SQS triggers notification Lambda
-7. Lambda sends email via SNS
-8. Order status updated to `CONFIRMED`
-9. If processing fails 3x, message goes to DLQ
+| # | Enhancement | Status | Details |
+|---|-------------|--------|---------|
+| 1 | **Specific Business Case** |  Complete | E-commerce Inventory Management with Orders & Notifications |
+| 2 | **Lambda Packaging** |  Complete | Individual packaging with tree-shaking, Middy middleware |
+| 3 | **YAML Organization** |  Complete | Modular resources: `resources/dynamodb.yml`, `resources/cognito.yml`, etc. |
+| 4 | **Deployment Scripts** |  Complete | `npm run deploy:dev`, `npm run deploy:prod`, test scripts |
+| 5 | **Testing Suite** |  Complete | Unit tests (Jest), Integration tests, E2E test scripts |
+| 6 | **AWS Cognito Authentication** |  Complete | Full signup/login flow, JWT protected routes |
 
 ---
 
-## 🔧 Backend
+## 🏗️ Architecture Overview
 
-### Directory Structure
 ```
-backend/
-├── src/
-│   ├── handlers/           # Lambda function handlers
-│   │   ├── health.ts       # Health check
-│   │   ├── docs.ts         # Swagger UI
-│   │   ├── products/       # Product CRUD handlers
-│   │   └── orders/         # Order handlers + SQS consumers
-│   ├── services/           # Business logic layer
-│   │   ├── productService.ts
-│   │   ├── orderService.ts
-│   │   └── notificationService.ts
-│   ├── repositories/       # Data access layer
-│   │   ├── productRepository.ts
-│   │   └── orderRepository.ts
-│   ├── middleware/         # Middy middleware
-│   │   ├── errorHandler.ts
-│   │   ├── requestContext.ts
-│   │   └── wrapper.ts
-│   ├── models/             # TypeScript interfaces
-│   ├── validation/         # Zod schemas
-│   └── utils/              # Helpers (logger, errors, response)
-├── resources/              # CloudFormation resources
-│   ├── dynamodb.yml
-│   ├── cognito.yml
-│   ├── sqs.yml
-│   └── sns.yml
+┌─────────────────────────────────────────────────────────────────────────┐
+│                              CLIENT LAYER                                │
+│  ┌────────────────────────────────────────────────────────────────────┐ │
+│  │  React SPA (TypeScript + Vite + Tailwind CSS)                      │ │
+│  │  • Product Browsing & Search                                        │ │
+│  │  • Order Management                                                 │ │
+│  │  • User Authentication (Cognito)                                    │ │
+│  └────────────────────────────────────────────────────────────────────┘ │
+│                                    │                                     │
+│                                    ▼                                     │
+│  ┌────────────────────────────────────────────────────────────────────┐ │
+│  │  Amazon CloudFront CDN  →  Amazon S3 (Static Hosting)              │ │
+│  └────────────────────────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────────────────────┘
+                                     │
+                                     ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│                              API LAYER                                   │
+│  ┌────────────────────────────────────────────────────────────────────┐ │
+│  │  Amazon API Gateway (REST API)                                      │ │
+│  │  • Cognito JWT Authorizer                                           │ │
+│  │  • Request Validation                                               │ │
+│  │  • Rate Limiting & CORS                                             │ │
+│  └────────────────────────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────────────────────┘
+                                     │
+                                     ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│                           COMPUTE LAYER                                  │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐  ┌─────────────┐ │
+│  │ Product CRUD │  │  Order CRUD  │  │  Notification │  │    Health   │ │
+│  │  (5 Lambdas) │  │  (3 Lambdas) │  │   Processor   │  │    Check    │ │
+│  └──────────────┘  └──────────────┘  └──────────────┘  └─────────────┘ │
+│                                     │                                    │
+│                    ┌────────────────┴────────────────┐                  │
+│                    │       Middy Middleware          │                  │
+│                    │  • Error Handling • CORS        │                  │
+│                    │  • JSON Parsing • Logging       │                  │
+│                    └─────────────────────────────────┘                  │
+└─────────────────────────────────────────────────────────────────────────┘
+                                     │
+                                     ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│                         DATA & MESSAGING LAYER                           │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐                  │
+│  │   DynamoDB   │  │  Amazon SQS  │  │  Amazon SNS  │                  │
+│  │  Single-Table │  │ Order Queue  │  │ Email Topic  │                  │
+│  │    Design    │  │  + DLQ       │  │              │                  │
+│  └──────────────┘  └──────────────┘  └──────────────┘                  │
+└─────────────────────────────────────────────────────────────────────────┘
+                                     │
+                                     ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│                     AUTHENTICATION & MONITORING                          │
+│  ┌──────────────────────────┐  ┌──────────────────────────────────────┐ │
+│  │  Amazon Cognito          │  │  Amazon CloudWatch                   │ │
+│  │  • User Pool             │  │  • Lambda Logs & Metrics             │ │
+│  │  • JWT Tokens            │  │  • API Gateway Logs                  │ │
+│  │  • Email Verification    │  │  • SQS/DynamoDB Metrics              │ │
+│  └──────────────────────────┘  └──────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## ⚙️ Lambda Functions
+
+| # | Function Name | HTTP Method | Endpoint | Description |
+|---|---------------|-------------|----------|-------------|
+| 1 | `health` | GET | `/health` | Service health check (public) |
+| 2 | `getDocs` | GET | `/docs` | Swagger UI documentation (public) |
+| 3 | `getDocsSpec` | GET | `/docs/spec` | OpenAPI 3.0 specification (public) |
+| 4 | `createProduct` | POST | `/products` | Create new product |
+| 5 | `getProduct` | GET | `/products/{id}` | Get product by ID |
+| 6 | `listProducts` | GET | `/products` | List/search products |
+| 7 | `updateProduct` | PUT | `/products/{id}` | Update product |
+| 8 | `deleteProduct` | DELETE | `/products/{id}` | Delete product |
+| 9 | `createOrder` | POST | `/orders` | Create order (purchase) |
+| 10 | `getOrder` | GET | `/orders/{id}` | Get order by ID |
+| 11 | `listOrders` | GET | `/orders` | List user's orders |
+| 12 | `processOrderNotification` | SQS Trigger | - | Process order notifications |
+| 13 | `processOrderDLQ` | SQS Trigger | - | Handle failed notifications |
+
+
+
+---
+
+## 🛠️ Tech Stack
+
+### Backend
+| Technology | Version | Purpose |
+|------------|---------|---------|
+| Node.js | 20.x | Runtime |
+| TypeScript | 5.3+ | Type-safe development |
+| Serverless Framework | 3.x | Infrastructure as Code |
+| AWS Lambda | - | Serverless compute |
+| API Gateway | REST | API management |
+| DynamoDB | - | NoSQL database |
+| Amazon SQS | - | Message queuing |
+| Amazon SNS | - | Email notifications |
+| Amazon Cognito | - | Authentication |
+| Zod | 3.x | Runtime validation |
+| Middy | 5.x | Lambda middleware |
+| Jest | 29.x | Testing |
+
+### Frontend
+| Technology | Version | Purpose |
+|------------|---------|---------|
+| React | 18.x | UI framework |
+| TypeScript | 5.x | Type safety |
+| Vite | 5.x | Build tool |
+| Tailwind CSS | 3.x | Styling |
+| React Query | 5.x | Server state |
+| React Router | 6.x | Routing |
+| AWS Amplify | 6.x | Cognito integration |
+| Axios | 1.x | HTTP client |
+
+---
+
+## 📁 Project Structure
+
+```
+.
+├── backend/
+│   ├── src/
+│   │   ├── handlers/           # Lambda function handlers
+│   │   │   ├── products/       # Product CRUD handlers
+│   │   │   ├── orders/         # Order handlers
+│   │   │   └── notifications/  # SQS processors
+│   │   ├── services/           # Business logic
+│   │   ├── repositories/       # Data access layer
+│   │   ├── validation/         # Zod schemas
+│   │   ├── middleware/         # Middy middleware
+│   │   └── utils/              # Utilities (logger, errors, response)
+│   ├── resources/              # Modular CloudFormation resources
+│   │   ├── dynamodb.yml        # DynamoDB table
+│   │   ├── cognito.yml         # User pool & authorizer
+│   │   ├── sqs.yml             # Queues
+│   │   └── sns.yml             # Topics
+│   ├── tests/                  # Test suites
+│   │   ├── unit/
+│   │   └── integration/
+│   ├── serverless.yml          # Main Serverless config
+│   ├── package.json
+│   └── tsconfig.json
+│
+├── frontend/
+│   ├── src/
+│   │   ├── components/         # React components
+│   │   ├── pages/              # Page components
+│   │   ├── context/            # Auth context
+│   │   ├── hooks/              # Custom hooks
+│   │   ├── services/           # API services
+│   │   └── types/              # TypeScript types
+│   ├── serverless.yml          # Frontend deployment
+│   ├── package.json
+│   └── vite.config.ts
+│
+├── .github/
+│   └── workflows/
+│       ├── ci.yml              # Continuous Integration
+│       └── cd.yml              # Continuous Deployment
+│
 ├── docs/
-│   └── openapi.yml         # OpenAPI 3.0 spec
-├── tests/
-│   ├── unit/
-│   ├── integration/
-│   └── e2e/
-└── serverless.yml          # Main Serverless config
+│   └── technical-documentation.md
+│
+└── README.md
 ```
-
-### Lambda Functions
-
-| Function | Trigger | Description |
-|----------|---------|-------------|
-| health | GET /health | Health check (no auth) |
-| docs | GET /docs | Swagger UI |
-| docsSpec | GET /docs/spec | OpenAPI JSON |
-| createProduct | POST /products | Create new product |
-| getProduct | GET /products/{id} | Get product by ID |
-| listProducts | GET /products | List/search products |
-| updateProduct | PUT /products/{id} | Update product |
-| deleteProduct | DELETE /products/{id} | Delete product |
-| createOrder | POST /orders | Place order |
-| getOrder | GET /orders/{id} | Get order by ID |
-| listOrders | GET /orders | List user's orders |
-| processOrderNotification | SQS | Process order notifications |
-| processOrderDLQ | SQS DLQ | Handle failed messages |
-
-### Environment Variables
-
-| Variable | Description |
-|----------|-------------|
-| STAGE | Deployment stage (dev/prod) |
-| TABLE_NAME | DynamoDB table name |
-| ORDER_QUEUE_URL | SQS queue URL |
-| ORDER_TOPIC_ARN | SNS topic ARN |
-| LOG_LEVEL | Logging level |
-| CORS_ORIGIN | Allowed CORS origin |
 
 ---
 
-## 💻 Frontend
-
-### Directory Structure
-```
-frontend/
-├── src/
-│   ├── components/
-│   │   ├── ui/             # Reusable UI components
-│   │   │   ├── button.tsx
-│   │   │   ├── input.tsx
-│   │   │   ├── card.tsx
-│   │   │   ├── badge.tsx
-│   │   │   ├── select.tsx
-│   │   │   ├── skeleton.tsx
-│   │   │   ├── toast.tsx
-│   │   │   └── toaster.tsx
-│   │   └── layout/         # Layout components
-│   │       ├── Layout.tsx
-│   │       ├── Header.tsx
-│   │       └── ProtectedRoute.tsx
-│   ├── pages/
-│   │   ├── Landing.tsx     # Public landing page
-│   │   ├── Products.tsx    # Product grid
-│   │   ├── ProductDetail.tsx # Product detail + order
-│   │   ├── Orders.tsx      # Order history
-│   │   └── auth/
-│   │       ├── Login.tsx
-│   │       └── Signup.tsx
-│   ├── context/
-│   │   └── AuthContext.tsx # Cognito auth context
-│   ├── hooks/
-│   │   ├── use-toast.ts
-│   │   ├── use-products.ts # React Query hooks
-│   │   └── use-orders.ts
-│   ├── services/
-│   │   └── api.ts          # API client
-│   ├── config/
-│   │   ├── amplify.ts      # AWS Amplify config
-│   │   └── api.ts          # API endpoints
-│   ├── types/
-│   │   └── index.ts        # TypeScript types
-│   ├── lib/
-│   │   └── utils.ts        # Utility functions
-│   ├── App.tsx
-│   ├── main.tsx
-│   └── index.css
-├── serverless.yml          # S3 + CloudFront config
-├── package.json
-├── vite.config.ts
-└── tailwind.config.js
-```
-
-### Pages & Routes
-
-| Route | Page | Auth | Description |
-|-------|------|------|-------------|
-| `/` | Landing | Public | Hero, features, CTA |
-| `/login` | Login | Public | Sign in form |
-| `/signup` | Signup | Public | Sign up + confirmation |
-| `/products` | Products | Protected | Product grid with filters |
-| `/products/:id` | ProductDetail | Protected | Product info + order form |
-| `/orders` | Orders | Protected | Order history list |
-
-### Color Palette (Neutral Gray)
-
-| Color | Usage | Value |
-|-------|-------|-------|
-| Primary | Buttons, links | Gray-900 (#111827) |
-| Secondary | Secondary text | Gray-600 (#4B5563) |
-| Background | Page background | White / Gray-50 |
-| Border | Borders | Gray-200 |
-| Success | Success states | Green-600 |
-| Warning | Warning states | Yellow-600 |
-| Error | Error states | Red-600 |
-
-### Responsive Breakpoints
-
-| Breakpoint | Width | Columns |
-|------------|-------|---------|
-| Mobile | < 640px | 1 |
-| Tablet | 640px - 1024px | 2 |
-| Laptop | 1024px - 1280px | 3 |
-| Desktop | > 1280px | 4 |
-
----
-
-## 🚀 Deployment
+## 🚀 Quick Start
 
 ### Prerequisites
 
 - Node.js 18+
-- AWS CLI configured
-- Serverless Framework installed globally
+- AWS CLI configured with credentials
+- npm or yarn
 
-### Backend Deployment
+### Backend Setup
+
 ```bash
-cd backend
+# Clone repository
+git clone https://github.com/madhur-banger/serverless-inventory-management
+cd serverless-inventory-system
 
-# Install dependencies
+# Install backend dependencies
+cd backend
 npm install
 
 # Deploy to dev
 npm run deploy:dev
 
-# Deploy to prod
+# Deploy to production
 npm run deploy:prod
-
-# Remove stack
-npm run remove:dev
 ```
 
-### Frontend Deployment
-```bash
-cd frontend
+### Frontend Setup
 
-# Install dependencies
+```bash
+# Install frontend dependencies
+cd frontend
 npm install
 
-# Build
+# Update environment variables
+cp .env.example .env
+# Edit .env with your API URL and Cognito details
+
+# Run development server
+npm run dev
+
+# Build for production
 npm run build
 
-# Deploy to S3 + CloudFront
-npm run deploy
-
-# Get your URL from output:
-# WebsiteURL: https://d1234567890abc.cloudfront.net
-```
-
-### Environment Setup
-
-1. Copy `.env.example` to `.env`
-2. Update values with your deployment outputs:
-```env
-VITE_API_URL=https://your-api-id.execute-api.us-east-1.amazonaws.com/prod
-VITE_COGNITO_USER_POOL_ID=us-east-1_XXXXXXXXX
-VITE_COGNITO_CLIENT_ID=XXXXXXXXXXXXXXXXXXXXXXXXXX
+# Deploy to AWS
+serverless deploy
 ```
 
 ---
 
-## 📖 API Reference
+## 🔄 CI/CD Pipeline
 
-### Authentication
+The project uses **5 GitHub Actions workflows** for comprehensive CI/CD:
 
-All endpoints except `/health` and `/docs` require a valid JWT token:
 ```
-Authorization: Bearer <cognito-id-token>
-```
-
-### Products
-
-#### List Products
-```
-GET /products?category=electronics&search=keyboard&limit=20
+.github/workflows/
+├── backend-ci.yml        # Backend linting & testing
+├── backend-deploy.yml    # Backend deployment to AWS
+├── frontend-ci.yml       # Frontend linting & testing
+├── frontend-deploy.yml   # Frontend deployment to S3/CloudFront
+└── destroy.yml           # Infrastructure teardown
 ```
 
-Response:
-```json
-{
-  "success": true,
-  "data": {
-    "items": [...],
-    "count": 20,
-    "nextToken": "..."
-  }
-}
+### Backend CI/CD (`.github/workflows/backend-deploy.yml`)
+
+**Triggers:** Push to `master` (paths: `backend/**`)
+
+```
+┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+│   CI Job    │────►│ Setup Job   │────►│ Deploy Job  │
+│             │     │             │     │             │
+│ • Checkout  │     │ • Determine │     │ • Configure │
+│ • Install   │     │   stage     │     │   AWS creds │
+│ • Lint      │     │ • Set env   │     │ • Serverless│
+│ • Test      │     │             │     │   deploy    │
+└─────────────┘     └─────────────┘     └─────────────┘
 ```
 
-#### Get Product
+**Pipeline Features:**
+- ✅ **Concurrency control** - Prevents parallel deployments
+- ✅ **CI gate** - Lint & tests must pass before deploy
+- ✅ **npm caching** - Faster builds with dependency caching
+- ✅ **Environment secrets** - Secure credential management
+- ✅ **Deployment summary** - API URL in GitHub summary
+
+### Frontend CI/CD (`.github/workflows/frontend-deploy.yml`)
+
+**Triggers:** Push to `master` (paths: `frontend/**`)
+
 ```
-GET /products/{id}
+┌─────────────┐     ┌─────────────────────────────────┐
+│  Build Job  │────►│          Deploy Job             │
+│             │     │                                 │
+│ • Install   │     │ • Download artifact             │
+│ • Build     │     │ • Serverless deploy             │
+│ • Upload    │     │ • CloudFront cache invalidation │
+│   artifact  │     │ • Deployment summary            │
+└─────────────┘     └─────────────────────────────────┘
 ```
 
-#### Create Product
-```
-POST /products
-Content-Type: application/json
+**Pipeline Features:**
+- ✅ **Artifact passing** - Build once, deploy the artifact
+- ✅ **CloudFront invalidation** - Automatic cache clearing
+- ✅ **Stack output extraction** - Gets distribution ID & URL
 
-{
-  "name": "Product Name",
-  "description": "Description",
-  "category": "electronics",
-  "price": 4999,
-  "quantity": 100,
-  "sku": "SKU-001"
-}
-```
+### Multi-Stage Deployment
 
-### Orders
+**Current Implementation:**
+- `master` branch → `prod` stage
 
-#### Create Order
-```
-POST /orders
-Content-Type: application/json
-
-{
-  "productId": "uuid",
-  "quantity": 2
-}
+**Stage Configuration Logic:**
+```yaml
+if [[ "${{ github.ref }}" == "refs/heads/master" ]]; then
+  echo "stage=prod"
+else
+  echo "stage=dev"
+fi
 ```
 
-#### List Orders
+![alt text](images/image-3.png)
+![alt text](images/image-4.png)
+---
+
+## 📱 Frontend Features
+
+### Pages
+
+| Page | Route | Auth Required | Description |
+|------|-------|---------------|-------------|
+| Landing | `/` | ❌ | Marketing page with hero & features |
+| Login | `/login` | ❌ | User authentication |
+| Signup | `/signup` | ❌ | User registration |
+| Products | `/products` | ✅ | Product catalog with filters |
+| Product Detail | `/products/:id` | ✅ | Product info + order form |
+| Orders | `/orders` | ✅ | Order history |
+
+### Responsive Design
+
+The application is fully responsive across all device sizes:
+
+- **Mobile:** 320px - 639px
+- **Tablet:** 640px - 1023px  
+- **Desktop:** 1024px+
+
+![alt text](images/image.png)
+![alt text](images/image-2.png)
+![alt text](images/image-1.png)
+
+---
+
+## 🔐 Authentication Flow
+
 ```
-GET /orders?status=CONFIRMED&limit=20
+1. User Registration
+   └─► Cognito User Pool
+       └─► Email Verification
+           └─► Account Activated
+
+2. User Login
+   └─► Cognito Authentication
+       └─► JWT Tokens Returned
+           ├─► ID Token (API auth)
+           ├─► Access Token
+           └─► Refresh Token
+
+3. Protected API Requests
+   └─► Authorization: Bearer <ID_TOKEN>
+       └─► API Gateway validates with Cognito
+           └─► Request processed
 ```
 
-#### Get Order
-```
-GET /orders/{id}
-```
+---
 
-### Error Response Format
-```json
-{
-  "success": false,
-  "error": {
-    "code": "VALIDATION_ERROR",
-    "message": "Validation failed",
-    "details": [
-      { "field": "price", "message": "Price must be positive" }
-    ]
-  },
-  "meta": {
-    "requestId": "abc123",
-    "timestamp": "2024-01-15T10:30:00.000Z"
-  }
-}
-```
+## 📊 Database Design (DynamoDB Single-Table)
+
+### Access Patterns
+
+| Pattern | Operation | Key Condition |
+|---------|-----------|---------------|
+| Get Product by ID | GetItem | PK=`PRODUCT#<id>`, SK=`METADATA` |
+| List Products by Category | Query GSI1 | GSI1PK=`CATEGORY#<cat>` |
+| Get Order by ID | GetItem | PK=`ORDER#<id>`, SK=`METADATA` |
+| List User Orders | Query GSI1 | GSI1PK=`USER#<userId>` |
 
 ---
 
 ## 🧪 Testing
 
-### Backend Tests
 ```bash
-cd backend
-
 # Run all tests
 npm test
 
@@ -383,87 +412,63 @@ npm test
 npm run test:coverage
 
 # Run specific test file
-npm test -- productSchema.test.ts
+npm test -- productService.test.ts
+
+# Run integration tests
+npm run test:integration
 ```
 
-### Test API Manually
-```bash
-cd backend
-chmod +x scripts/test-api.sh
 
-# Edit script with your values
-nano scripts/test-api.sh
-
-# Run
-./scripts/test-api.sh
-```
-
-### Frontend Tests
-```bash
-cd frontend
-
-# Run in development
-npm run dev
-
-# Build and preview
-npm run build
-npm run preview
-```
 
 ---
 
-## 🔧 Troubleshooting
+## 📹 Video Walkthrough
 
-### Common Issues
+*[Add Loom video link here]*
 
-#### CORS Errors
-- Check `CORS_ORIGIN` environment variable in backend
-- Ensure CloudFront domain is allowed
-
-#### Authentication Errors
-- Verify Cognito User Pool ID and Client ID
-- Check token expiration
-- Ensure user is confirmed
-
-#### Order Processing Fails
-- Check SQS queue for messages
-- Check DLQ for failed messages
-- Review CloudWatch logs for Lambda errors
-
-#### Frontend Not Loading
-- Clear browser cache
-- Check CloudFront invalidation
-- Verify S3 bucket permissions
-
-### Useful AWS CLI Commands
-```bash
-# Check Cognito users
-aws cognito-idp list-users --user-pool-id us-east-1_XXXXXXXXX
-
-# Check SQS messages
-aws sqs get-queue-attributes \
-  --queue-url https://sqs.us-east-1.amazonaws.com/123/queue \
-  --attribute-names ApproximateNumberOfMessages
-
-# Invalidate CloudFront cache
-aws cloudfront create-invalidation \
-  --distribution-id EXXXXXXXXXX \
-  --paths "/*"
-
-# View Lambda logs
-aws logs tail /aws/lambda/inventory-api-prod-createOrder --follow
-```
+**Video Contents:**
+1. Architecture overview
+2. Code walkthrough (Backend)
+3. Infrastructure as Code (Serverless)
+4. CI/CD pipeline demonstration
+5. Frontend features
+6. Live demo
 
 ---
 
-## 📞 Support
+## 💰 Cost Estimate
 
-For issues or questions:
-1. Check the [Swagger documentation](/docs)
-2. Review CloudWatch logs
-3. Check GitHub Issues
+For low-medium traffic (~10,000 requests/month):
+
+| Service | Estimated Cost |
+|---------|----------------|
+| Lambda | ~$0.20 |
+| API Gateway | ~$0.04 |
+| DynamoDB | ~$0.25 |
+| SQS/SNS | Free tier |
+| Cognito | Free tier (<50k MAU) |
+| CloudFront | ~$0.43 |
+| **Total** | **~$1.45/month** |
 
 ---
 
-*Documentation Version: 1.0.0*
-*Last Updated: Project Complete*
+## 📚 Documentation
+
+- [Technical Documentation](docs/technical-documentation.md)
+- [API Documentation (Swagger)](https://s26yt7k27l.execute-api.us-east-1.amazonaws.com/prod/docs)
+- [OpenAPI Spec](https://s26yt7k27l.execute-api.us-east-1.amazonaws.com/prod/docs/spec)
+
+---
+
+
+
+## 👤 Author
+
+**Madhur**
+
+- AWS Community Builder (Serverless)
+- AWS Solutions Architect Associate
+
+---
+
+*Built with ❤️ using AWS Serverless*

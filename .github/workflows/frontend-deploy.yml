@@ -154,7 +154,7 @@ jobs:
       # ---------------------------
       - name: Deployment Summary
         run: |
-          echo "## 🚀 Frontend Deployment Successful" >> $GITHUB_STEP_SUMMARY
+          echo "##  Frontend Deployment Successful" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
           echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
