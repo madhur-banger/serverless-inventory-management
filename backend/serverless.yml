@@ -33,6 +33,9 @@ provider:
     ORDER_QUEUE_URL: !Ref OrderQueue
     ORDER_TOPIC_ARN: !Ref OrderNotificationTopic
     CORS_ORIGIN: ${self:custom.corsOrigin.${self:provider.stage}}
+    # SES Configuration
+    SES_FROM_EMAIL: ${self:custom.sesFromEmail.${self:provider.stage}}
+    ADMIN_EMAIL: ${self:custom.adminEmail.${self:provider.stage}, ''}
   
   # Default Lambda settings
   memorySize: 256
@@ -74,9 +77,15 @@ custom:
     dev: false
     prod: true
   
+  # Email Configuration
+  # UPDATE: Replace with your verified SES email/domain
+  sesFromEmail:
+    dev: 'madhur.cloudevops@gmail.com'
+    prod: 'madhur.cloudevops@gmail.com'  # Must be verified in SES
+  
   adminEmail:
-    dev: 'dev@example.com'
-    prod: ${env:ADMIN_EMAIL, 'admin@example.com'}
+    dev: 'madhur.cloudevops@gmail.com'
+    prod: 'madhur.cloudevops@gmail.com'
   
   # esbuild configuration
   esbuild:
@@ -304,6 +313,12 @@ functions:
         Action:
           - sns:Publish
         Resource: !Ref OrderNotificationTopic
+      # SES permissions for sending user emails
+      - Effect: Allow
+        Action:
+          - ses:SendEmail
+          - ses:SendRawEmail
+        Resource: '*'
 
   processOrderDLQ:
     handler: src/handlers/orders/processDLQ.handler
@@ -322,6 +337,7 @@ resources:
   - ${file(resources/cognito.yml)}
   - ${file(resources/sqs.yml)}
   - ${file(resources/sns.yml)}
+  - ${file(resources/ses.yml)}
   
   # Additional outputs
   - Outputs:
