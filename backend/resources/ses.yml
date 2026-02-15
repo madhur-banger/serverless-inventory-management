@@ -1,0 +1,24 @@
+# resources/ses.yml
+# SES Configuration for User Email Notifications
+
+Resources:
+  # =============================================================================
+  # SES EMAIL IDENTITY (for sending emails)
+  # =============================================================================
+  # Note: In production, you should verify a domain instead of individual emails
+  # For sandbox mode, both sender and recipient emails must be verified
+  
+  SesConfigurationSet:
+    Type: AWS::SES::ConfigurationSet
+    Properties:
+      Name: ${self:service}-${self:provider.stage}-config
+
+# =============================================================================
+# OUTPUTS
+# =============================================================================
+Outputs:
+  SesConfigurationSetName:
+    Description: SES Configuration Set Name
+    Value: !Ref SesConfigurationSet
+    Export:
+      Name: ${self:service}-${self:provider.stage}-SesConfigSetName
