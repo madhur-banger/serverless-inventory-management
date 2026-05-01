@@ -1,13 +1,13 @@
-# 🛒 Serverless Inventory Management System
+# 🎓 Serverless Inventory Management System — Workshop & Seminar
 
-A production-grade, full-stack serverless inventory management system built on AWS, demonstrating enterprise-level architecture, event-driven design, and modern DevOps practices for [sls.guru](https://www.sls.guru/)
+A production-grade, full-stack serverless inventory management system built on AWS, designed and presented as a **hands-on seminar** to teach enterprise-level serverless architecture, event-driven design, and modern DevOps practices.
 
-
+> This project was built and demonstrated as part of a serverless workshop series conducted at colleges and developer meetups to help students and early-career developers gain real-world experience with AWS serverless technologies.
 
 ![AWS](https://img.shields.io/badge/AWS-Serverless-orange?logo=amazon-aws)
 ![CI/CD](https://img.shields.io/badge/CI%2FCD-GitHub%20Actions-black?logo=github-actions)
 
-## 🌐 [Live Demo]((https://d3g8yrgnuos3zh.cloudfront.net))
+## 🌐 [Live Demo](https://d3g8yrgnuos3zh.cloudfront.net)
 
 | Resource | URL |
 |----------|-----|
@@ -21,37 +21,62 @@ A production-grade, full-stack serverless inventory management system built on A
 
 ## [Video Walkthrough](https://www.loom.com/share/823b20b6ea7c4872b9091f554a6a34fe)
 
-##  [CI/CD Pipeline Image](#-cicd-pipeline)
+## [CI/CD Pipeline Image](#-cicd-pipeline)
+
+---
+
+## 🎯 Seminar Overview
+
+### What This Seminar Covers
+
+This workshop was designed to take participants from zero serverless knowledge to deploying a fully working, production-grade application on AWS. Across multiple sessions, attendees learned:
+
+- **Session 1 — Serverless Fundamentals:** What serverless is, why it matters, and how AWS Lambda, API Gateway, and DynamoDB fit together.
+- **Session 2 — Building the Backend:** Hands-on coding of Lambda functions for CRUD operations, using TypeScript, Zod validation, and Middy middleware.
+- **Session 3 — Event-Driven Architecture:** Wiring up SQS queues, SNS notifications, and Dead Letter Queues for reliable, asynchronous order processing.
+- **Session 4 — Authentication & Security:** Implementing AWS Cognito for user signup/login, JWT-based route protection, and secure API design.
+- **Session 5 — Frontend & Full-Stack Integration:** Building a React SPA with Vite and Tailwind CSS, connecting it to the serverless backend via API Gateway.
+- **Session 6 — CI/CD & Deployment:** Setting up GitHub Actions pipelines for automated testing, linting, and multi-stage deployments to AWS.
+
+### Who This Is For
+
+- College students exploring cloud computing and serverless for the first time
+- Early-career developers looking to build real AWS projects for their portfolio
+- Anyone preparing for AWS certifications who wants hands-on practice
+
+---
 
 ## 📋 Requirements Checklist
 
-###  Mandatory Requirements
+### Mandatory Requirements
 
 | # | Requirement | Status | Evidence |
 |---|-------------|--------|----------|
-| 1 | **JavaScript/TypeScript** - Backend in Node.js, Frontend in React |  Complete | Backend: `backend/src/**/*.ts`, Frontend: `frontend/src/**/*.tsx` |
-| 2 | **Infrastructure as Code** - Serverless Framework |  Complete | `backend/serverless.yml` + `backend/resources/*.yml` |
-| 3 | **API Gateway + DynamoDB** |  Complete | REST API storing data in DynamoDB single-table design |
-| 4 | **Lambda CRUD Functions** |  Complete | 13 Lambda functions |
-| 5 | **CI/CD Multi-Stage Deployment** |  Complete | GitHub Actions with stage logic (see [CI/CD Pipeline](#-cicd-pipeline)) |
-| 6 | **Fully Working & Documented** | Complete | This README + Technical Documentation + Swagger API Docs |
-| 7 | **Public GitHub Repository** |  Complete | [Repository Link](https://github.com/madhur-banger/serverless-inventory-management)  |
-| 8 | **Loom Video Walkthrough** | 📹 Complete | *[ [Video Walkthrough](https://www.loom.com/share/823b20b6ea7c4872b9091f554a6a34fe)]* |
+| 1 | **JavaScript/TypeScript** — Backend in Node.js, Frontend in React | ✅ Complete | Backend: `backend/src/**/*.ts`, Frontend: `frontend/src/**/*.tsx` |
+| 2 | **Infrastructure as Code** — Serverless Framework | ✅ Complete | `backend/serverless.yml` + `backend/resources/*.yml` |
+| 3 | **API Gateway + DynamoDB** | ✅ Complete | REST API storing data in DynamoDB single-table design |
+| 4 | **Lambda CRUD Functions** | ✅ Complete | 13 Lambda functions |
+| 5 | **CI/CD Multi-Stage Deployment** | ✅ Complete | GitHub Actions with stage logic (see [CI/CD Pipeline](#-cicd-pipeline)) |
+| 6 | **Fully Working & Documented** | ✅ Complete | This README + Technical Documentation + Swagger API Docs |
+| 7 | **Public GitHub Repository** | ✅ Complete | [Repository Link](https://github.com/madhur-banger/serverless-inventory-management) |
+| 8 | **Loom Video Walkthrough** | 📹 Complete | [Video Walkthrough](https://www.loom.com/share/823b20b6ea7c4872b9091f554a6a34fe) |
 
-### ✅ Optional Enhancements (All Implemented!)
+### Optional Enhancements (All Implemented!)
 
 | # | Enhancement | Status | Details |
 |---|-------------|--------|---------|
-| 1 | **Specific Business Case** |  Complete | E-commerce Inventory Management with Orders & Notifications |
-| 2 | **Lambda Packaging** |  Complete | Individual packaging with tree-shaking, Middy middleware |
-| 3 | **YAML Organization** |  Complete | Modular resources: `resources/dynamodb.yml`, `resources/cognito.yml`, etc. |
-| 4 | **Deployment Scripts** |  Complete | `npm run deploy:dev`, `npm run deploy:prod`, test scripts |
-| 5 | **Testing Suite** |  Complete | Unit tests (Jest), Integration tests, E2E test scripts |
-| 6 | **AWS Cognito Authentication** |  Complete | Full signup/login flow, JWT protected routes |
+| 1 | **Specific Business Case** | ✅ Complete | E-commerce Inventory Management with Orders & Notifications |
+| 2 | **Lambda Packaging** | ✅ Complete | Individual packaging with tree-shaking, Middy middleware |
+| 3 | **YAML Organization** | ✅ Complete | Modular resources: `resources/dynamodb.yml`, `resources/cognito.yml`, etc. |
+| 4 | **Deployment Scripts** | ✅ Complete | `npm run deploy:dev`, `npm run deploy:prod`, test scripts |
+| 5 | **Testing Suite** | ✅ Complete | Unit tests (Jest), Integration tests, E2E test scripts |
+| 6 | **AWS Cognito Authentication** | ✅ Complete | Full signup/login flow, JWT protected routes |
 
 ---
 
 ## 🏗️ Architecture Overview
+
+This architecture was walked through step-by-step during the seminar, explaining why each AWS service was chosen and how they connect in an event-driven pattern.
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
@@ -121,55 +146,55 @@ A production-grade, full-stack serverless inventory management system built on A
 
 ## ⚙️ Lambda Functions
 
-| # | Function Name | HTTP Method | Endpoint | Description |
-|---|---------------|-------------|----------|-------------|
-| 1 | `health` | GET | `/health` | Service health check (public) |
-| 2 | `getDocs` | GET | `/docs` | Swagger UI documentation (public) |
-| 3 | `getDocsSpec` | GET | `/docs/spec` | OpenAPI 3.0 specification (public) |
-| 4 | `createProduct` | POST | `/products` | Create new product |
-| 5 | `getProduct` | GET | `/products/{id}` | Get product by ID |
-| 6 | `listProducts` | GET | `/products` | List/search products |
-| 7 | `updateProduct` | PUT | `/products/{id}` | Update product |
-| 8 | `deleteProduct` | DELETE | `/products/{id}` | Delete product |
-| 9 | `createOrder` | POST | `/orders` | Create order (purchase) |
-| 10 | `getOrder` | GET | `/orders/{id}` | Get order by ID |
-| 11 | `listOrders` | GET | `/orders` | List user's orders |
-| 12 | `processOrderNotification` | SQS Trigger | - | Process order notifications |
-| 13 | `processOrderDLQ` | SQS Trigger | - | Handle failed notifications |
-
-
+| # | Function Name | HTTP Method | Endpoint | Description | Covered In |
+|---|---------------|-------------|----------|-------------|------------|
+| 1 | `health` | GET | `/health` | Service health check (public) | Session 2 |
+| 2 | `getDocs` | GET | `/docs` | Swagger UI documentation (public) | Session 2 |
+| 3 | `getDocsSpec` | GET | `/docs/spec` | OpenAPI 3.0 specification (public) | Session 2 |
+| 4 | `createProduct` | POST | `/products` | Create new product | Session 2 |
+| 5 | `getProduct` | GET | `/products/{id}` | Get product by ID | Session 2 |
+| 6 | `listProducts` | GET | `/products` | List/search products | Session 2 |
+| 7 | `updateProduct` | PUT | `/products/{id}` | Update product | Session 2 |
+| 8 | `deleteProduct` | DELETE | `/products/{id}` | Delete product | Session 2 |
+| 9 | `createOrder` | POST | `/orders` | Create order (purchase) | Session 3 |
+| 10 | `getOrder` | GET | `/orders/{id}` | Get order by ID | Session 3 |
+| 11 | `listOrders` | GET | `/orders` | List user's orders | Session 3 |
+| 12 | `processOrderNotification` | SQS Trigger | — | Process order notifications | Session 3 |
+| 13 | `processOrderDLQ` | SQS Trigger | — | Handle failed notifications | Session 3 |
 
 ---
 
 ## 🛠️ Tech Stack
 
 ### Backend
-| Technology | Version | Purpose |
-|------------|---------|---------|
-| Node.js | 20.x | Runtime |
-| TypeScript | 5.3+ | Type-safe development |
-| Serverless Framework | 3.x | Infrastructure as Code |
-| AWS Lambda | - | Serverless compute |
-| API Gateway | REST | API management |
-| DynamoDB | - | NoSQL database |
-| Amazon SQS | - | Message queuing |
-| Amazon SNS | - | Email notifications |
-| Amazon Cognito | - | Authentication |
-| Zod | 3.x | Runtime validation |
-| Middy | 5.x | Lambda middleware |
-| Jest | 29.x | Testing |
+
+| Technology | Version | Purpose | Taught In |
+|------------|---------|---------|-----------|
+| Node.js | 20.x | Runtime | Session 1 |
+| TypeScript | 5.3+ | Type-safe development | Session 1 |
+| Serverless Framework | 3.x | Infrastructure as Code | Session 2 |
+| AWS Lambda | — | Serverless compute | Session 2 |
+| API Gateway | REST | API management | Session 2 |
+| DynamoDB | — | NoSQL database | Session 2 |
+| Amazon SQS | — | Message queuing | Session 3 |
+| Amazon SNS | — | Email notifications | Session 3 |
+| Amazon Cognito | — | Authentication | Session 4 |
+| Zod | 3.x | Runtime validation | Session 2 |
+| Middy | 5.x | Lambda middleware | Session 2 |
+| Jest | 29.x | Testing | Session 6 |
 
 ### Frontend
-| Technology | Version | Purpose |
-|------------|---------|---------|
-| React | 18.x | UI framework |
-| TypeScript | 5.x | Type safety |
-| Vite | 5.x | Build tool |
-| Tailwind CSS | 3.x | Styling |
-| React Query | 5.x | Server state |
-| React Router | 6.x | Routing |
-| AWS Amplify | 6.x | Cognito integration |
-| Axios | 1.x | HTTP client |
+
+| Technology | Version | Purpose | Taught In |
+|------------|---------|---------|-----------|
+| React | 18.x | UI framework | Session 5 |
+| TypeScript | 5.x | Type safety | Session 5 |
+| Vite | 5.x | Build tool | Session 5 |
+| Tailwind CSS | 3.x | Styling | Session 5 |
+| React Query | 5.x | Server state | Session 5 |
+| React Router | 6.x | Routing | Session 5 |
+| AWS Amplify | 6.x | Cognito integration | Session 5 |
+| Axios | 1.x | HTTP client | Session 5 |
 
 ---
 
@@ -225,7 +250,7 @@ A production-grade, full-stack serverless inventory management system built on A
 
 ---
 
-## 🚀 Quick Start
+## 🚀 Quick Start (Follow Along with the Seminar)
 
 ### Prerequisites
 
@@ -276,7 +301,7 @@ serverless deploy
 
 ## 🔄 CI/CD Pipeline
 
-The project uses **5 GitHub Actions workflows** for comprehensive CI/CD:
+The project uses **5 GitHub Actions workflows** for comprehensive CI/CD, covered in depth during **Session 6**:
 
 ```
 .github/workflows/
@@ -303,11 +328,11 @@ The project uses **5 GitHub Actions workflows** for comprehensive CI/CD:
 ```
 
 **Pipeline Features:**
-- ✅ **Concurrency control** - Prevents parallel deployments
-- ✅ **CI gate** - Lint & tests must pass before deploy
-- ✅ **npm caching** - Faster builds with dependency caching
-- ✅ **Environment secrets** - Secure credential management
-- ✅ **Deployment summary** - API URL in GitHub summary
+- ✅ **Concurrency control** — Prevents parallel deployments
+- ✅ **CI gate** — Lint & tests must pass before deploy
+- ✅ **npm caching** — Faster builds with dependency caching
+- ✅ **Environment secrets** — Secure credential management
+- ✅ **Deployment summary** — API URL in GitHub summary
 
 ### Frontend CI/CD (`.github/workflows/frontend-deploy.yml`)
 
@@ -325,9 +350,9 @@ The project uses **5 GitHub Actions workflows** for comprehensive CI/CD:
 ```
 
 **Pipeline Features:**
-- ✅ **Artifact passing** - Build once, deploy the artifact
-- ✅ **CloudFront invalidation** - Automatic cache clearing
-- ✅ **Stack output extraction** - Gets distribution ID & URL
+- ✅ **Artifact passing** — Build once, deploy the artifact
+- ✅ **CloudFront invalidation** — Automatic cache clearing
+- ✅ **Stack output extraction** — Gets distribution ID & URL
 
 ### Multi-Stage Deployment
 
@@ -345,6 +370,7 @@ fi
 
 ![alt text](images/cicd-1.png)
 ![alt text](images/cicd-2.png)
+
 ---
 
 ## 📱 Frontend Features
@@ -364,8 +390,8 @@ fi
 
 The application is fully responsive across all device sizes:
 
-- **Mobile:** 320px - 639px
-- **Tablet:** 640px - 1023px  
+- **Mobile:** 320px – 639px
+- **Tablet:** 640px – 1023px
 - **Desktop:** 1024px+
 
 ![alt text](images/image.png)
@@ -426,11 +452,9 @@ npm test -- productService.test.ts
 npm run test:integration
 ```
 
-
-
 ---
 
-## 📹 [Video Walkthrough](https://www.loom.com/share/823b20b6ea7c4872b9091f554a6a34fe)
+## 📹 [Seminar Recording / Video Walkthrough](https://www.loom.com/share/823b20b6ea7c4872b9091f554a6a34fe)
 
 [Video Link](https://www.loom.com/share/823b20b6ea7c4872b9091f554a6a34fe)
 
@@ -468,15 +492,14 @@ For low-medium traffic (~10,000 requests/month):
 
 ---
 
-
-
 ## 👤 Author
 
 **Madhur**
 
 - AWS Community Builder (Serverless)
 - AWS Solutions Architect Associate
+- Conducted serverless workshops and seminars at colleges and developer communities
 
 ---
 
-*Built with ❤️ using AWS Serverless*
+*Built with ❤️ using AWS Serverless — designed as a teaching resource to help developers learn serverless the right way.*
